@@ -181,6 +181,7 @@ public class AuthService {
         }
 
         String username = authentication.getName();
+        
         Optional<User> userOpt = userRepository.findByUsername(username);
         
         if (userOpt.isEmpty()) {

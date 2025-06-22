@@ -58,9 +58,13 @@ public class DataInitializer implements CommandLineRunner {
         // Create regular user
         createUserIfNotExists("user", "password", "user@example.com", Set.of("USER"));
 
+        // Create moderator user
+        createUserIfNotExists("moderator", "mod123", "moderator@example.com", Set.of("USER", "MODERATOR"));
+
         // Create admin user
         Set<String> adminRoles = new HashSet<>();
         adminRoles.add("USER");
+        adminRoles.add("MODERATOR");
         adminRoles.add("ADMIN");
         createUserIfNotExists("admin", "admin123", "admin@example.com", adminRoles);
 

@@ -6,6 +6,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -45,11 +46,6 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private boolean enabled = true;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
-    @Column(name = "role")
-    private Set<String> roles;
-
     @Column(nullable = false)
     private boolean accountNonExpired = true;
     
@@ -58,6 +54,11 @@ public class User implements UserDetails {
     
     @Column(nullable = false)
     private boolean credentialsNonExpired = true;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "role")
+    private Set<String> roles;
 
     // Default constructor required by JPA
     public User() {}
@@ -106,6 +107,32 @@ public class User implements UserDetails {
 
     public void setRoles(Set<String> roles) {
         this.roles = roles;
+    }
+
+    // Role Management Methods
+    public boolean hasRole(String role) {
+        return roles != null && roles.contains(role);
+    }
+
+    public boolean hasAnyRole(String... roles) {
+        if (this.roles == null) return false;
+        for (String role : roles) {
+            if (this.roles.contains(role)) return true;
+        }
+        return false;
+    }
+
+    public void addRole(String role) {
+        if (roles == null) {
+            roles = new HashSet<>();
+        }
+        roles.add(role);
+    }
+
+    public void removeRole(String role) {
+        if (roles != null) {
+            roles.remove(role);
+        }
     }
 
     // UserDetails Interface Implementation

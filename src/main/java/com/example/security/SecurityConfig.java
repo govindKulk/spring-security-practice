@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -21,6 +22,10 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
  */
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
+/* EnableMethodSecurity is used to enable method security
+ * prePostEnabled indicates that the @PreAuthorize and @PostAuthorize annotations are enabled
+ */
 public class SecurityConfig {
 
     @Autowired
@@ -43,8 +48,10 @@ public class SecurityConfig {
                 // Auth endpoints - no authentication required
                 .requestMatchers("/api/auth/**").permitAll()
                 
-                // Admin endpoints - requires ADMIN role
+                // Role-based endpoints
                 .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/moderator/**").hasAnyRole("ADMIN", "MODERATOR")
+                .requestMatchers("/user/**").hasAnyRole("USER", "ADMIN", "MODERATOR")
                 
                 // Private endpoints - requires any authentication
                 .requestMatchers("/private/**").authenticated()
@@ -70,9 +77,9 @@ public class SecurityConfig {
             // Add JWT filter before UsernamePasswordAuthenticationFilter
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
             
-            // Disable CSRF for JWT (development only)
+            // Disable CSRF for JWT (development only) - FIXED: Disable completely for JWT
             .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/h2-console/**", "/api/auth/**")
+                .ignoringRequestMatchers("/h2-console/**", "/api/auth/**", "/admin/**", "/user/**", "/moderator/**")
             )
             
             // Allow H2 console frames (development only)
