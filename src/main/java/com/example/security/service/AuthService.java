@@ -202,4 +202,55 @@ public class AuthService {
             tokens.get("accessToken")
         );
     }
+
+    /**
+     * Link OAuth2 account to existing user
+     */
+    public Map<String, Object> linkOAuth2Account(String email, String password, 
+                                               String oauth2Provider, String oauth2Id, 
+                                               String oauth2Name, String oauth2Picture) {
+        
+        // Check if OAuth2 account is already linked to another user
+        Optional<User> existingOAuth2User = userRepository.findByOauth2ProviderAndOauth2Id(oauth2Provider, oauth2Id);
+        if (existingOAuth2User.isPresent()) {
+            throw new RuntimeException("This OAuth2 account is already linked to another user");
+        }
+        
+        // Find the existing user by email
+        Optional<User> existingUser = userRepository.findByEmail(email);
+        if (existingUser.isEmpty()) {
+            throw new RuntimeException("No user found with the provided email");
+        }
+        
+        User user = existingUser.get();
+        
+        // Verify password
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new RuntimeException("Invalid password");
+        }
+        
+        // Check if user already has OAuth2 linked
+        if (user.isOauth2User()) {
+            throw new RuntimeException("This user already has an OAuth2 account linked");
+        }
+        
+        // Link the OAuth2 account
+        user.setOauth2Provider(oauth2Provider);
+        user.setOauth2Id(oauth2Id);
+        user.setName(oauth2Name);
+        user.setPictureUrl(oauth2Picture);
+        
+        userRepository.save(user);
+        
+        return Map.of(
+            "success", true,
+            "message", "OAuth2 account linked successfully",
+            "user", Map.of(
+                "username", user.getUsername(),
+                "email", user.getEmail(),
+                "oauth2Provider", user.getOauth2Provider(),
+                "name", user.getName()
+            )
+        );
+    }
 }
