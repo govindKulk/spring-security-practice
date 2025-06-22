@@ -18,26 +18,47 @@ spring:
   # JPA Configuration
   jpa:
     hibernate:
-      ddl-auto: create-drop  # Create tables on startup, drop on shutdown (development only)
-    show-sql: true           # Show SQL queries in console
+      ddl-auto: create-drop
+    show-sql: true
     properties:
       hibernate:
-        format_sql: true     # Format SQL for better readability
+        format_sql: true
         dialect: org.hibernate.dialect.H2Dialect
-        # Enable SQL logging for debugging
         use_sql_comments: true
-        # Show parameter values in logs
         type: trace
+
+  # OAuth2 Configuration - FIXED: Proper structure
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - email
+              - profile
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            client-authentication-method: client_secret_post
+            authorization-grant-type: authorization_code
+        provider:
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/auth
+            token-uri: https://oauth2.googleapis.com/token
+            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+            user-name-attribute: sub
+            jwk-set-uri: https://www.googleapis.com/oauth2/v3/certs
 
 # Server Configuration
 server:
   port: 8080
 
-# Logging Configuration (to see Spring Security debug info)
+# Logging Configuration
 logging:
   level:
     com.example.security: DEBUG
     org.springframework.security: DEBUG
+    org.springframework.security.oauth2: DEBUG
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
   pattern:
@@ -46,6 +67,6 @@ logging:
 # JWT Configuration
 jwt:
   secret: "your-super-secret-jwt-key-that-is-at-least-256-bits-long-for-hs256-algorithm"
-  access-token-expiration: 900000  # 15 minutes in milliseconds
-  refresh-token-expiration: 604800000  # 7 days in milliseconds
-  issuer: "spring-security-practice" 
+  access-token-expiration: 900000
+  refresh-token-expiration: 604800000
+  issuer: "spring-security-practice"

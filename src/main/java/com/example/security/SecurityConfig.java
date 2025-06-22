@@ -1,6 +1,7 @@
 package com.example.security;
 
 import com.example.security.jwt.JwtAuthenticationFilter;
+import com.example.security.oauth2.OAuth2SuccessHandler;
 import com.example.security.service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -14,8 +15,19 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
+import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import java.util.Map;
 
 /**
  * Spring Security Configuration Class - Updated for JWT with Refresh Tokens
@@ -34,6 +46,9 @@ public class SecurityConfig {
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    @Autowired
+    private OAuth2SuccessHandler oauth2SuccessHandler;
+
     /**
      * SecurityFilterChain Bean - Configured for JWT
      */
@@ -47,6 +62,7 @@ public class SecurityConfig {
                 
                 // Auth endpoints - no authentication required
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/oauth2/**").permitAll()
                 
                 // Role-based endpoints
                 .requestMatchers("/admin/**").hasRole("ADMIN")
@@ -61,6 +77,15 @@ public class SecurityConfig {
                 
                 // All other requests require authentication
                 .anyRequest().authenticated()
+            )
+            
+            // OAuth2 configuration
+            .oauth2Login(oauth2 -> oauth2
+                .successHandler(oauth2SuccessHandler)
+                .userInfoEndpoint(userInfo -> userInfo
+                    .oidcUserService(this.oidcUserService())
+                    .userService(this.oauth2UserService())
+                )
             )
             
             // Disable form login for JWT
@@ -79,7 +104,7 @@ public class SecurityConfig {
             
             // Disable CSRF for JWT (development only) - FIXED: Disable completely for JWT
             .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/h2-console/**", "/api/auth/**", "/admin/**", "/user/**", "/moderator/**")
+                .ignoringRequestMatchers("/h2-console/**", "/api/auth/**", "/oauth2/**")
             )
             
             // Allow H2 console frames (development only)
@@ -88,6 +113,46 @@ public class SecurityConfig {
             );
         
         return http.build();
+    }
+
+    /**
+     * OIDC User Service for Google OAuth2
+     */
+    private OAuth2UserService<OidcUserRequest, OidcUser> oidcUserService() {
+        final OidcUserService delegate = new OidcUserService();
+
+        return (userRequest) -> {
+            OidcUser oidcUser = delegate.loadUser(userRequest);
+
+            Map<String, Object> attributes = oidcUser.getAttributes();
+            Map<String, Object> claims = oidcUser.getClaims();
+
+            return new DefaultOidcUser(
+                oidcUser.getAuthorities(),
+                oidcUser.getIdToken(),
+                oidcUser.getUserInfo(),
+                "sub" // Use "sub" as the name attribute
+            );
+        };
+    }
+
+    /**
+     * OAuth2 User Service for non-OIDC providers
+     */
+    private OAuth2UserService<OAuth2UserRequest, OAuth2User> oauth2UserService() {
+        DefaultOAuth2UserService delegate = new DefaultOAuth2UserService();
+
+        return (userRequest) -> {
+            OAuth2User oauth2User = delegate.loadUser(userRequest);
+
+            Map<String, Object> attributes = oauth2User.getAttributes();
+
+            return new DefaultOAuth2User(
+                oauth2User.getAuthorities(),
+                attributes,
+                "sub" // Use "sub" as the name attribute
+            );
+        };
     }
 
     /**

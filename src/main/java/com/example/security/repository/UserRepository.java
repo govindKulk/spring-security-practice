@@ -47,6 +47,16 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
 
     /**
+     * Find user by OAuth2 provider and OAuth2 ID
+     */
+    Optional<User> findByOauth2ProviderAndOauth2Id(String provider, String oauth2Id);
+
+    /**
+     * Find user by email and OAuth2 provider
+     */
+    Optional<User> findByEmailAndOauth2Provider(String email, String provider);
+
+    /**
      * Check if a user exists with the given username.
      * 
      * @param username the username to check
@@ -61,4 +71,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * @return true if user exists, false otherwise
      */
     boolean existsByEmail(String email);
+
+    /**
+     * Check if a user exists with the given OAuth2 provider and ID.
+     */
+    boolean existsByOauth2ProviderAndOauth2Id(String provider, String oauth2Id);
 } 

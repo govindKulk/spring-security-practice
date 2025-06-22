@@ -1,8 +1,11 @@
 com/example/security/DataInitializer.class
+com/example/security/controller/OAuth2Controller.class
 com/example/security/repository/UserRepository.class
 com/example/security/jwt/JwtTokenUtil.class
 com/example/security/entity/User.class
+com/example/security/dto/TokenResponse.class
 com/example/security/service/AuthService.class
+com/example/security/service/UserService.class
 com/example/security/SecurityApplication.class
 com/example/security/controller/AuthController.class
 com/example/security/service/CustomUserDetailsService.class
@@ -10,6 +13,10 @@ com/example/security/dto/LoginRequest.class
 com/example/security/dto/AuthResponse.class
 com/example/security/dto/RegisterRequest.class
 com/example/security/config/JwtConfig.class
+com/example/security/controller/ModeratorController.class
 com/example/security/jwt/JwtAuthenticationFilter.class
+com/example/security/entity/Role.class
+com/example/security/controller/AdminController.class
 com/example/security/SecurityConfig.class
 com/example/security/TestController.class
+com/example/security/oauth2/OAuth2SuccessHandler.class

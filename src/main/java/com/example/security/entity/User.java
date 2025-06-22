@@ -55,6 +55,19 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private boolean credentialsNonExpired = true;
 
+    // OAuth2 fields
+    @Column(name = "oauth2_provider")
+    private String oauth2Provider; // "google", "github", etc.
+
+    @Column(name = "oauth2_id")
+    private String oauth2Id; // Provider's user ID
+
+    @Column(name = "name")
+    private String name; // Full name from OAuth2
+
+    @Column(name = "picture_url")
+    private String pictureUrl; // Profile picture URL
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "role")
@@ -69,6 +82,20 @@ public class User implements UserDetails {
         this.password = password;
         this.email = email;
         this.roles = roles;
+        this.enabled = true;
+    }
+
+    // OAuth2 constructor
+    public User(String email, String oauth2Provider, String oauth2Id, String name, String pictureUrl) {
+        this.username = email; // Use email as username for OAuth2 users
+        this.password = ""; // No password for OAuth2 users
+        this.email = email;
+        this.oauth2Provider = oauth2Provider;
+        this.oauth2Id = oauth2Id;
+        this.name = name;
+        this.pictureUrl = pictureUrl;
+        this.roles = new HashSet<>();
+        this.roles.add("USER");
         this.enabled = true;
     }
 
@@ -109,7 +136,44 @@ public class User implements UserDetails {
         this.roles = roles;
     }
 
-    // Role Management Methods
+    // OAuth2 getters and setters
+    public String getOauth2Provider() {
+        return oauth2Provider;
+    }
+
+    public void setOauth2Provider(String oauth2Provider) {
+        this.oauth2Provider = oauth2Provider;
+    }
+
+    public String getOauth2Id() {
+        return oauth2Id;
+    }
+
+    public void setOauth2Id(String oauth2Id) {
+        this.oauth2Id = oauth2Id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getPictureUrl() {
+        return pictureUrl;
+    }
+
+    public void setPictureUrl(String pictureUrl) {
+        this.pictureUrl = pictureUrl;
+    }
+
+    // Helper methods
+    public boolean isOauth2User() {
+        return oauth2Provider != null && !oauth2Provider.isEmpty();
+    }
+
     public boolean hasRole(String role) {
         return roles != null && roles.contains(role);
     }
@@ -207,6 +271,8 @@ public class User implements UserDetails {
                 ", email='" + email + '\'' +
                 ", enabled=" + enabled +
                 ", roles=" + roles +
+                ", oauth2Provider='" + oauth2Provider + '\'' +
+                ", name='" + name + '\'' +
                 '}';
     }
 } 
