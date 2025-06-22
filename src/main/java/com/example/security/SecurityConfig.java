@@ -17,7 +17,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
- * Spring Security Configuration Class - Updated for JWT
+ * Spring Security Configuration Class - Updated for JWT with Refresh Tokens
  */
 @Configuration
 @EnableWebSecurity

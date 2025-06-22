@@ -12,4 +12,5 @@
 /Users/govind/Developer/Projects/spring-security-practice/src/main/java/com/example/security/jwt/JwtAuthenticationFilter.java
 /Users/govind/Developer/Projects/spring-security-practice/src/main/java/com/example/security/controller/AuthController.java
 /Users/govind/Developer/Projects/spring-security-practice/src/main/java/com/example/security/dto/AuthResponse.java
+/Users/govind/Developer/Projects/spring-security-practice/src/main/java/com/example/security/dto/TokenResponse.java
 /Users/govind/Developer/Projects/spring-security-practice/src/main/java/com/example/security/service/AuthService.java

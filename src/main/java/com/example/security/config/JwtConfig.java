@@ -5,15 +5,16 @@ import org.springframework.stereotype.Component;
 
 /**
  * JWT Configuration Properties
- * These values can be configured in application.yml
+ * Enhanced for both access and refresh tokens
  */
 @Component
 @ConfigurationProperties(prefix = "jwt")
 public class JwtConfig {
     
     private String secret;
-    private long expiration;
-    private String issuer;
+    private long accessTokenExpiration = 900000;  // 15 minutes default
+    private long refreshTokenExpiration = 604800000; // 7 days default
+    private String issuer = "spring-security-practice";
     
     // Getters and Setters
     public String getSecret() {
@@ -24,12 +25,20 @@ public class JwtConfig {
         this.secret = secret;
     }
     
-    public long getExpiration() {
-        return expiration;
+    public long getAccessTokenExpiration() {
+        return accessTokenExpiration;
     }
     
-    public void setExpiration(long expiration) {
-        this.expiration = expiration;
+    public void setAccessTokenExpiration(long accessTokenExpiration) {
+        this.accessTokenExpiration = accessTokenExpiration;
+    }
+    
+    public long getRefreshTokenExpiration() {
+        return refreshTokenExpiration;
+    }
+    
+    public void setRefreshTokenExpiration(long refreshTokenExpiration) {
+        this.refreshTokenExpiration = refreshTokenExpiration;
     }
     
     public String getIssuer() {
@@ -38,5 +47,14 @@ public class JwtConfig {
     
     public void setIssuer(String issuer) {
         this.issuer = issuer;
+    }
+    
+    // Legacy method for backward compatibility
+    public long getExpiration() {
+        return accessTokenExpiration;
+    }
+    
+    public void setExpiration(long expiration) {
+        this.accessTokenExpiration = expiration;
     }
 } 

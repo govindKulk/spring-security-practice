@@ -1,13 +1,13 @@
 spring:
   application:
-    name: spring-security-learning
+    name: spring-security-practice
   
   # H2 Database Configuration (in-memory for testing)
   datasource:
     url: jdbc:h2:mem:testdb
     driver-class-name: org.h2.Driver
     username: sa
-    password: 
+    password: password
   
   # H2 Console Configuration (for database inspection)
   h2:
@@ -45,6 +45,7 @@ logging:
 
 # JWT Configuration
 jwt:
-  secret: your-super-secret-jwt-key-should-be-very-long-at-least-256-bits-for-security
-  expiration: 86400000  # 24 hours in milliseconds
-  issuer: spring-security-app 
+  secret: "your-super-secret-jwt-key-that-is-at-least-256-bits-long-for-hs256-algorithm"
+  access-token-expiration: 900000  # 15 minutes in milliseconds
+  refresh-token-expiration: 604800000  # 7 days in milliseconds
+  issuer: "spring-security-practice" 

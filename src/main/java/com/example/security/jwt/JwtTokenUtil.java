@@ -14,8 +14,8 @@ import java.util.Map;
 import java.util.function.Function;
 
 /**
- * JWT Token Utility Class
- * Handles JWT token generation, validation, and extraction
+ * Enhanced JWT Token Utility Class
+ * Handles both access and refresh token generation, validation, and extraction
  */
 @Component
 public class JwtTokenUtil {
@@ -24,30 +24,56 @@ public class JwtTokenUtil {
     private JwtConfig jwtConfig;
 
     /**
-     * Generate a JWT token for a user
-     * used while login , register
+     * Generate access token for a user
      */
-    public String generateToken(UserDetails userDetails) {
+    public String generateAccessToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
-        return createToken(claims, userDetails.getUsername());
+        claims.put("type", "ACCESS");
+        return createToken(claims, userDetails.getUsername(), jwtConfig.getAccessTokenExpiration());
     }
 
     /**
-     * Generate a JWT token with custom claims
-     * used while login , register
+     * Generate refresh token for a user
+     */
+    public String generateRefreshToken(UserDetails userDetails) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("type", "REFRESH");
+        return createToken(claims, userDetails.getUsername(), jwtConfig.getRefreshTokenExpiration());
+    }
+
+    /**
+     * Generate both access and refresh tokens
+     */
+    public Map<String, String> generateTokenPair(UserDetails userDetails) {
+        Map<String, String> tokens = new HashMap<>();
+        tokens.put("accessToken", generateAccessToken(userDetails));
+        tokens.put("refreshToken", generateRefreshToken(userDetails));
+        return tokens;
+    }
+
+    /**
+     * Generate a JWT token for a user (legacy method)
+     */
+    public String generateToken(UserDetails userDetails) {
+        Map<String, Object> claims = new HashMap<>();
+        return createToken(claims, userDetails.getUsername(), jwtConfig.getAccessTokenExpiration());
+    }
+
+    /**
+     * Generate a JWT token with custom claims (legacy method)
      */
     public String generateToken(String username, String role) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("role", role);
-        return createToken(claims, username);
+        return createToken(claims, username, jwtConfig.getAccessTokenExpiration());
     }
 
     /**
-     * Create JWT token with claims and subject
+     * Create JWT token with claims, subject, and expiration
      */
-    private String createToken(Map<String, Object> claims, String subject) {
+    private String createToken(Map<String, Object> claims, String subject, long expiration) {
         Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + jwtConfig.getExpiration());
+        Date expiryDate = new Date(now.getTime() + expiration);
 
         return Jwts.builder()
                 .setClaims(claims)
@@ -84,18 +110,18 @@ public class JwtTokenUtil {
     }
 
     /**
+     * Extract token type (ACCESS or REFRESH)
+     */
+    public String extractTokenType(String token) {
+        Claims claims = extractAllClaims(token);
+        return claims.get("type", String.class);
+    }
+
+    /**
      * Extract a specific claim from JWT token
-     * Function is a functional interface that takes a Claims object and returns a T object
-     * Claims is a class that represents the claims of a JWT token
-     * T is a generic type that represents the type of the claim to be extracted
-     * although T is not specified, it is inferred from the function parameter, whihc is in this case Claims::getSubject or Claims:getExpiration
-     * claimsResolver is a function that takes a Claims object and returns a T object
-
-
      */
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
-        
         return claimsResolver.apply(claims);
     }
 
@@ -148,6 +174,22 @@ public class JwtTokenUtil {
                 .parseClaimsJws(token);
             return !isTokenExpired(token);
         } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Validate refresh token specifically
+     */
+    public Boolean validateRefreshToken(String token) {
+        try {
+            if (!validateToken(token)) {
+                return false;
+            }
+            
+            String tokenType = extractTokenType(token);
+            return "REFRESH".equals(tokenType);
+        } catch (Exception e) {
             return false;
         }
     }

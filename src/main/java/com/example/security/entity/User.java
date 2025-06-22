@@ -50,9 +50,13 @@ public class User implements UserDetails {
     @Column(name = "role")
     private Set<String> roles;
 
-   
+    @Column(nullable = false)
     private boolean accountNonExpired = true;
+    
+    @Column(nullable = false)
     private boolean accountNonLocked = true;
+    
+    @Column(nullable = false)
     private boolean credentialsNonExpired = true;
 
     // Default constructor required by JPA

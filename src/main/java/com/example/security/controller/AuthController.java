@@ -3,13 +3,15 @@ package com.example.security.controller;
 import com.example.security.dto.AuthResponse;
 import com.example.security.dto.LoginRequest;
 import com.example.security.dto.RegisterRequest;
+import com.example.security.dto.TokenResponse;
 import com.example.security.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * REST Controller for authentication endpoints
+ * Authentication Controller
+ * Handles login, registration, and token refresh endpoints
  */
 @RestController
 @RequestMapping("/api/auth")
@@ -24,14 +26,9 @@ public class AuthController {
      * POST /api/auth/register
      */
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) {
-        AuthResponse response = authService.register(request);
-        
-        if (response.isSuccess()) {
-            return ResponseEntity.ok(response);
-        } else {
-            return ResponseEntity.badRequest().body(response);
-        }
+    public ResponseEntity<TokenResponse> register(@RequestBody RegisterRequest request) {
+        TokenResponse response = authService.register(request);
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -39,14 +36,9 @@ public class AuthController {
      * POST /api/auth/login
      */
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
-        AuthResponse response = authService.login(request);
-        
-        if (response.isSuccess()) {
-            return ResponseEntity.ok(response);
-        } else {
-            return ResponseEntity.badRequest().body(response);
-        }
+    public ResponseEntity<TokenResponse> login(@RequestBody LoginRequest request) {
+        TokenResponse response = authService.login(request);
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -55,7 +47,7 @@ public class AuthController {
      */
     @GetMapping("/me")
     public ResponseEntity<AuthResponse> getCurrentUser(@RequestHeader("Authorization") String authHeader) {
-        AuthResponse response = authService.getCurrentUser(authHeader);
+        AuthResponse response = authService.getCurrentUser();
         
         if (response.isSuccess()) {
             return ResponseEntity.ok(response);
@@ -70,7 +62,7 @@ public class AuthController {
      */
     @PostMapping("/validate")
     public ResponseEntity<AuthResponse> validateToken(@RequestHeader("Authorization") String authHeader) {
-        AuthResponse response = authService.getCurrentUser(authHeader);
+        AuthResponse response = authService.getCurrentUser();
         
         if (response.isSuccess()) {
             return ResponseEntity.ok(AuthResponse.success("Token is valid", response.getUsername(), response.getRole(), response.getToken()));
@@ -80,12 +72,26 @@ public class AuthController {
     }
 
     /**
-     * Logout (Spring Security handles this automatically)
-     * POST /api/auth/logout
+     * Token refresh endpoint
+     */
+    @PostMapping("/refresh")
+    public ResponseEntity<TokenResponse> refreshToken(@RequestHeader("Authorization") String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        String refreshToken = authHeader.substring(7);
+        TokenResponse response = authService.refreshToken(refreshToken);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Logout endpoint (client-side token removal)
      */
     @PostMapping("/logout")
-    public ResponseEntity<AuthResponse> logout() {
-        // Spring Security will handle the logout
-        return ResponseEntity.ok(AuthResponse.success("Logout successful", null, null, null));
+    public ResponseEntity<String> logout() {
+        // In a stateless JWT system, logout is handled client-side
+        // You could implement a token blacklist here for additional security
+        return ResponseEntity.ok("Logged out successfully");
     }
 }

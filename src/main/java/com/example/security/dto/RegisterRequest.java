@@ -1,23 +1,20 @@
 package com.example.security.dto;
 
 /**
- * DTO for user registration requests
+ * Register Request DTO
  */
 public class RegisterRequest {
     private String username;
     private String password;
     private String email;
-    private String role;
 
-    // Default constructor
+    // Constructors
     public RegisterRequest() {}
 
-    // Constructor with all fields
-    public RegisterRequest(String username, String password, String email, String role) {
+    public RegisterRequest(String username, String password, String email) {
         this.username = username;
         this.password = password;
         this.email = email;
-        this.role = role;
     }
 
     // Getters and Setters
@@ -43,13 +40,5 @@ public class RegisterRequest {
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
     }
 } 
