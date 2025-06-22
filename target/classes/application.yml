@@ -1,0 +1,50 @@
+spring:
+  application:
+    name: spring-security-learning
+  
+  # H2 Database Configuration (in-memory for testing)
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  
+  # H2 Console Configuration (for database inspection)
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  
+  # JPA Configuration
+  jpa:
+    hibernate:
+      ddl-auto: create-drop  # Create tables on startup, drop on shutdown (development only)
+    show-sql: true           # Show SQL queries in console
+    properties:
+      hibernate:
+        format_sql: true     # Format SQL for better readability
+        dialect: org.hibernate.dialect.H2Dialect
+        # Enable SQL logging for debugging
+        use_sql_comments: true
+        # Show parameter values in logs
+        type: trace
+
+# Server Configuration
+server:
+  port: 8080
+
+# Logging Configuration (to see Spring Security debug info)
+logging:
+  level:
+    com.example.security: DEBUG
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+# JWT Configuration
+jwt:
+  secret: your-super-secret-jwt-key-should-be-very-long-at-least-256-bits-for-security
+  expiration: 86400000  # 24 hours in milliseconds
+  issuer: spring-security-app 
